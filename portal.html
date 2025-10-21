@@ -204,7 +204,7 @@
             <button class="share-btn" onclick="shareWhatsApp()">📱 WhatsApp</button>
             <button class="share-btn email" onclick="shareEmail()">📧 Email</button>
             <button class="share-btn copy" onclick="copyToClipboard()">📋 Copy</button>
-            <button class="share-btn" onclick="shareQRCode()" style="background: #ff6b35;">📲 Share QR Portal</button>
+            <button class="share-btn" onclick="shareQRCode()" style="background: #ff6b35;">🔒 Create Secure File QR</button>
         </div>
         
         <div class="qr-section" id="qrSection" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #f0f0f0;">
@@ -220,6 +220,31 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         let submittedData = {};
+        let redirectUrl = null;
+        
+        // Check for redirect parameter on page load
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            redirectUrl = urlParams.get('redirect');
+            
+            if (redirectUrl) {
+                // Show that this is a secure access portal
+                const subtitle = document.querySelector('.subtitle');
+                subtitle.innerHTML = '🔒 Secure Access Required - Enter your information to continue to protected content';
+                subtitle.style.color = '#ff6b35';
+                subtitle.style.fontWeight = 'bold';
+                
+                // Add file access notice
+                const form = document.getElementById('infoForm');
+                const notice = document.createElement('div');
+                notice.style.cssText = 'background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px;';
+                notice.innerHTML = `
+                    <p><strong>⚠️ Secure File Access</strong></p>
+                    <p>After verification, you'll be redirected to: <br><code style="font-size: 12px; color: #333;">${redirectUrl}</code></p>
+                `;
+                form.insertBefore(notice, form.firstChild);
+            }
+        });
 
         document.getElementById('infoForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -237,6 +262,27 @@
             // Display success message
             document.getElementById('successMessage').style.display = 'block';
             
+            // Check if there's a redirect URL (secure file access)
+            if (redirectUrl) {
+                // Show redirect message
+                const successMessage = document.getElementById('successMessage');
+                successMessage.innerHTML = `
+                    ✅ Verification successful! <br>
+                    🔗 Redirecting to secure content in 3 seconds...
+                `;
+                
+                // Hide form immediately for security
+                document.getElementById('infoForm').style.display = 'none';
+                
+                // Redirect after 3 seconds
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 3000);
+                
+                return; // Don't show normal sharing options
+            }
+            
+            // Normal portal behavior (no redirect)
             // Display submitted information
             displaySubmittedInfo();
             
@@ -342,19 +388,27 @@
         function shareQRCode() {
             if (!validateSecurity()) return;
             
+            // Get file URL from user input
+            const fileUrl = prompt('🔗 Enter the file/content URL you want to share securely:\n(Example: http://10.201.124.12:6153/download)');
+            
+            if (!fileUrl) {
+                alert('❌ No URL provided. QR code not generated.');
+                return;
+            }
+            
             // Show QR section
             const qrSection = document.getElementById('qrSection');
             qrSection.style.display = 'block';
             
-            // Generate QR code for the portal
-            const portalUrl = 'https://kanta22222.github.io/portal-qr/portal.html';
+            // Create secure URL that goes to portal first, then to file
+            const secureUrl = `https://kanta22222.github.io/portal-qr/portal.html?redirect=${encodeURIComponent(fileUrl)}`;
             const qrContainer = document.getElementById('qrcode');
             
             // Clear previous QR code
             qrContainer.innerHTML = '';
             
-            // Generate new QR code
-            QRCode.toCanvas(qrContainer, portalUrl, {
+            // Generate new QR code with secure redirect
+            QRCode.toCanvas(qrContainer, secureUrl, {
                 width: 200,
                 margin: 2,
                 color: {
@@ -368,9 +422,14 @@
                 } else {
                     console.log('QR Code generated successfully!');
                     // Add explanation text
-                    const explanation = document.createElement('p');
-                    explanation.style.cssText = 'color: #666; font-size: 12px; margin-top: 10px;';
-                    explanation.textContent = '🔒 This QR code opens the secure portal where people must enter their info first';
+                    const explanation = document.createElement('div');
+                    explanation.style.cssText = 'color: #666; font-size: 12px; margin-top: 10px; text-align: left;';
+                    explanation.innerHTML = `
+                        <p><strong>🔒 Secure File Access:</strong></p>
+                        <p>1️⃣ QR opens portal first</p>
+                        <p>2️⃣ User enters verification info</p>
+                        <p>3️⃣ Then redirects to: ${fileUrl}</p>
+                    `;
                     qrContainer.appendChild(explanation);
                 }
             });
