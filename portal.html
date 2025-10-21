@@ -204,9 +204,19 @@
             <button class="share-btn" onclick="shareWhatsApp()">📱 WhatsApp</button>
             <button class="share-btn email" onclick="shareEmail()">📧 Email</button>
             <button class="share-btn copy" onclick="copyToClipboard()">📋 Copy</button>
+            <button class="share-btn" onclick="shareQRCode()" style="background: #ff6b35;">📲 Share QR Portal</button>
+        </div>
+        
+        <div class="qr-section" id="qrSection" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #f0f0f0;">
+            <h3>🔒 Secure Portal QR Code</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Share this QR code - when scanned, people must enter their info first before sharing</p>
+            <div id="qrcode" style="margin: 20px auto; text-align: center;"></div>
+            <button class="share-btn" onclick="downloadQR()" style="background: #28a745;">💾 Download QR Code</button>
         </div>
     </div>
 
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         let submittedData = {};
 
@@ -325,6 +335,56 @@
                 }
                 
                 document.body.removeChild(textArea);
+            }
+        }
+
+        function shareQRCode() {
+            if (!validateSecurity()) return;
+            
+            // Show QR section
+            const qrSection = document.getElementById('qrSection');
+            qrSection.style.display = 'block';
+            
+            // Generate QR code for the portal
+            const portalUrl = 'https://kanta22222.github.io/portal-qr/portal.html';
+            const qrContainer = document.getElementById('qrcode');
+            
+            // Clear previous QR code
+            qrContainer.innerHTML = '';
+            
+            // Generate new QR code
+            QRCode.toCanvas(qrContainer, portalUrl, {
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error) {
+                if (error) {
+                    console.error('QR Code generation error:', error);
+                    qrContainer.innerHTML = '<p style="color: red;">Error generating QR code</p>';
+                } else {
+                    console.log('QR Code generated successfully!');
+                    // Add explanation text
+                    const explanation = document.createElement('p');
+                    explanation.style.cssText = 'color: #666; font-size: 12px; margin-top: 10px;';
+                    explanation.textContent = '🔒 This QR code opens the secure portal where people must enter their info first';
+                    qrContainer.appendChild(explanation);
+                }
+            });
+        }
+        
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (canvas) {
+                // Create download link
+                const link = document.createElement('a');
+                link.download = 'secure-portal-qr.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            } else {
+                alert('Please generate QR code first!');
             }
         }
 
