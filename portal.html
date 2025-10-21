@@ -209,9 +209,10 @@
         
         <div class="qr-section" id="qrSection" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #f0f0f0;">
             <h3>🔒 Secure Portal QR Code</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Share this QR code - when scanned, people must enter their info first before sharing</p>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">🔒 Share this QR code - when scanned, people must enter their info first before sharing</p>
+            <p style="color: #ff6b35; font-size: 12px; font-weight: bold; margin-bottom: 10px;">⚠️ You must be authenticated to download QR codes</p>
             <div id="qrcode" style="margin: 20px auto; text-align: center;"></div>
-            <button class="share-btn" onclick="downloadQR()" style="background: #28a745;">💾 Download QR Code</button>
+            <button class="share-btn" onclick="downloadQR()" style="background: #28a745;">🔒 Secure Download QR</button>
         </div>
     </div>
 
@@ -376,6 +377,12 @@
         }
         
         function downloadQR() {
+            // Security check - must enter portal info first
+            if (!validateSecurity()) {
+                alert('🔒 Security: You must enter your information in the portal first before downloading QR codes!');
+                return;
+            }
+            
             const canvas = document.querySelector('#qrcode canvas');
             if (canvas) {
                 // Create download link
@@ -383,6 +390,11 @@
                 link.download = 'secure-portal-qr.png';
                 link.href = canvas.toDataURL();
                 link.click();
+                
+                // Show confirmation with security notice
+                setTimeout(() => {
+                    alert('✅ QR Code downloaded!\n🔒 This QR code requires users to enter portal information first before sharing.');
+                }, 100);
             } else {
                 alert('Please generate QR code first!');
             }
