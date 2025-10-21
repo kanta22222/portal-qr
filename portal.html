@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Information Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .share-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            display: none;
+        }
+
+        .share-btn {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .share-btn:hover {
+            opacity: 0.9;
+        }
+
+        .share-btn.email {
+            background: #ea4335;
+        }
+
+        .share-btn.copy {
+            background: #1da1f2;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .shared-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+        }
+
+        .shared-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📋</div>
+        <h1>Information Portal</h1>
+        <p class="subtitle">Please enter your information below</p>
+        
+        <form id="infoForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit Information</button>
+        </form>
+        
+        <div class="success-message" id="successMessage">
+            ✅ Information submitted successfully!
+        </div>
+        
+        <div class="shared-info" id="sharedInfo">
+            <h3>Submitted Information:</h3>
+            <div id="infoDisplay"></div>
+        </div>
+        
+        <div class="share-section" id="shareSection">
+            <h3>Share this information:</h3>
+            <button class="share-btn" onclick="shareWhatsApp()">📱 WhatsApp</button>
+            <button class="share-btn email" onclick="shareEmail()">📧 Email</button>
+            <button class="share-btn copy" onclick="copyToClipboard()">📋 Copy</button>
+        </div>
+    </div>
+
+    <script>
+        let submittedData = {};
+
+        document.getElementById('infoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = new FormData(this);
+            submittedData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (value.trim()) {
+                    submittedData[key] = value.trim();
+                }
+            }
+            
+            // Display success message
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // Display submitted information
+            displaySubmittedInfo();
+            
+            // Show share section
+            document.getElementById('shareSection').style.display = 'block';
+            
+            // Hide form
+            document.getElementById('infoForm').style.display = 'none';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        });
+
+        function displaySubmittedInfo() {
+            const infoDisplay = document.getElementById('infoDisplay');
+            const sharedInfo = document.getElementById('sharedInfo');
+            
+            let html = '';
+            const labels = {
+                name: 'Name',
+                email: 'Email',
+                phone: 'Phone'
+            };
+            
+            for (let [key, value] of Object.entries(submittedData)) {
+                html += `<div class="info-item">
+                    <span class="info-label">${labels[key]}:</span> ${value}
+                </div>`;
+            }
+            
+            infoDisplay.innerHTML = html;
+            sharedInfo.style.display = 'block';
+        }
+
+        function formatDataForSharing() {
+            let text = "📋 Information Shared:\n\n";
+            
+            const labels = {
+                name: 'Name',
+                email: 'Email',
+                phone: 'Phone'
+            };
+            
+            for (let [key, value] of Object.entries(submittedData)) {
+                text += `${labels[key]}: ${value}\n`;
+            }
+            
+            text += `\nShared on: ${new Date().toLocaleString()}`;
+            return text;
+        }
+
+        function shareWhatsApp() {
+            const text = formatDataForSharing();
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareEmail() {
+            const text = formatDataForSharing();
+            const subject = "Shared Information from Portal";
+            const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+            window.location.href = url;
+        }
+
+        async function copyToClipboard() {
+            const text = formatDataForSharing();
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('Information copied to clipboard!');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    alert('Information copied to clipboard!');
+                } catch (err) {
+                    alert('Could not copy to clipboard. Please copy manually.');
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // Add some smooth animations
+        window.addEventListener('load', function() {
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                document.querySelector('.container').style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
