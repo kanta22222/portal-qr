@@ -222,8 +222,9 @@
         let submittedData = {};
         let redirectUrl = null;
         
-        // Check for redirect parameter on page load
+        // Check for redirect parameter and setup animations on page load
         window.addEventListener('load', function() {
+            // Check for redirect parameter
             const urlParams = new URLSearchParams(window.location.search);
             redirectUrl = urlParams.get('redirect');
             
@@ -244,6 +245,16 @@
                 `;
                 form.insertBefore(notice, form.firstChild);
             }
+            
+            // Add smooth animations
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                document.querySelector('.container').style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'translateY(0)';
+            }, 100);
         });
 
         document.getElementById('infoForm').addEventListener('submit', function(e) {
@@ -459,17 +470,6 @@
             }
         }
 
-        // Add some smooth animations
-        window.addEventListener('load', function() {
-            document.querySelector('.container').style.opacity = '0';
-            document.querySelector('.container').style.transform = 'translateY(20px)';
-            
-            setTimeout(() => {
-                document.querySelector('.container').style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                document.querySelector('.container').style.opacity = '1';
-                document.querySelector('.container').style.transform = 'translateY(0)';
-            }, 100);
-        });
     </script>
 </body>
 </html>
